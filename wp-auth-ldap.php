@@ -570,7 +570,7 @@ function authLdap_load_options($reload = false)
         // the current version for options
         $option_version_plugin = 1;
         // defaults for all options
-        $options_default = array(
+        $options = array(
             'Enabled'       => false,
             'CachePW'       => false,
             'URI'           => '',
@@ -592,7 +592,7 @@ function authLdap_load_options($reload = false)
         );
 
         // 2016-12-23 MLF (why we forked) Set any options we can find via defined constants
-        foreach ($options as $option_name => $option_value) {
+        foreach($options as $option_name => $option_value) {
             $constant_name = 'AUTHLDAP_'.strtoupper($option_name);
             if( defined($constant_name) ){
                 $options[$option_name] = constant($constant_name);

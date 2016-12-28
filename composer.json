@@ -1,34 +1,26 @@
 {
-    "name" : "org_heigl/authLdap",
+    "name" : "lampo/wp-auth-ldap",
     "type" : "library",
-    "description": "Enables wordpress-authentication via LDAP",
+    "description": "Fork of http://github.com/heiglandreas/authLdap, moves settings to defined constants.",
     "keywords": ["ldap","authenticate", "auth", "wordpress"],
-    "homepage": "http://github.com/heiglandreas/authLdap",
+    "homepage": "http://github.com/lampo/wp-auth-ldap",
     "license": "MIT",
     "authors": [{
         "name": "Andreas Heigl",
         "email": "andreas@heigl.org",
         "homepage": "http://andreas.heigl.org",
         "role": "Developer"
+    },{
+        "name": "Micah Flatt",
+        "email": "mflatt@flattware.net",
+        "role": "Developer"
     }],
     "require" : {
         "php": ">=5.4"
-    },
-    "require-dev": {
-        "php-mock/php-mock": "^1.0"
-        "phpunit/phpunit": "~4.5",
-        "mockery/mockery": "0.9.*",
-        "codeclimate/php-test-reporter": "0.1.*",
-        "squizlabs/php_codesniffer": "~2.3"
     },
     "autoload" : {
         "psr-4" : {
             "Org_Heigl\\AuthLdap\\" : "./"
         }
     },
-    "autoload-dev" : {
-        "psr-4" : {
-            "Org_Heigl\\AuthLdapTest\\" : "tests/"
-        }
-    }
 }

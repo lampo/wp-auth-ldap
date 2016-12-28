@@ -1,3 +1,0 @@
-dn: cn=Manager,dc=example,dc=com
-cn: Manager
-objectClass: organizationalRole

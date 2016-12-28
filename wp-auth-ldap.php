@@ -1,7 +1,7 @@
 <?php
 /*
-Plugin Name: AuthLDAP
-Plugin URI: https://github.com/heiglandreas/authLdap
+Plugin Name: Lampo-AuthLDAP
+Plugin URI: https://github.com/lampo/wp-auth-ldap
 Description: This plugin allows you to use your existing LDAP as authentication base for WordPress
 Version: 1.4.20
 Author: Andreas Heigl <a.heigl@wdv.de>
@@ -18,91 +18,11 @@ function authLdap_debug($message)
 }
 
 
-function authLdap_addmenu()
-{
-    if (function_exists('add_options_page')) {
-        add_options_page('AuthLDAP', 'AuthLDAP', 'manage_options', basename(__FILE__), 'authLdap_options_panel');
-    }
-}
-
 function authLdap_get_post($name, $default = '')
 {
     return isset($_POST[$name]) ? $_POST[$name] : $default;
 }
 
-function authLdap_options_panel()
-{
-    // inclusde style sheet
-    wp_enqueue_style('authLdap-style', plugin_dir_url(__FILE__) . 'authLdap.css');
-
-    if (($_SERVER['REQUEST_METHOD'] == 'POST') && array_key_exists('ldapOptionsSave', $_POST)) {
-        $new_options = array(
-            'Enabled'       => authLdap_get_post('authLDAPAuth', false),
-            'CachePW'       => authLdap_get_post('authLDAPCachePW', false),
-            'URI'           => authLdap_get_post('authLDAPURI'),
-            'URISeparator'  => authLdap_get_post('authLDAPURISeparator'),
-            'StartTLS'      => authLdap_get_post('authLDAPStartTLS', false),
-            'Filter'        => authLdap_get_post('authLDAPFilter'),
-            'NameAttr'      => authLdap_get_post('authLDAPNameAttr'),
-            'SecName'       => authLdap_get_post('authLDAPSecName'),
-            'UidAttr'       => authLdap_get_post('authLDAPUidAttr'),
-            'MailAttr'      => authLdap_get_post('authLDAPMailAttr'),
-            'WebAttr'       => authLdap_get_post('authLDAPWebAttr'),
-            'Groups'        => authLdap_get_post('authLDAPGroups', array()),
-            'GroupSeparator'=> authLdap_get_post('authLDAPGroupSeparator', ','),
-            'Debug'         => authLdap_get_post('authLDAPDebug', false),
-            'GroupAttr'     => authLdap_get_post('authLDAPGroupAttr'),
-            'GroupFilter'   => authLdap_get_post('authLDAPGroupFilter'),
-            'DefaultRole'   => authLdap_get_post('authLDAPDefaultRole'),
-            'GroupEnable'   => authLdap_get_post('authLDAPGroupEnable', false),
-            'GroupOverUser' => authLdap_get_post('authLDAPGroupOverUser', false),
-        );
-        if (authLdap_set_options($new_options)) {
-            echo "<div class='updated'><p>Saved Options!</p></div>";
-        } else {
-            echo "<div class='error'><p>Could not save Options!</p></div>";
-        }
-    }
-
-    // Do some initialization for the admin-view
-    $authLDAP              = authLdap_get_option('Enabled');
-    $authLDAPCachePW       = authLdap_get_option('CachePW');
-    $authLDAPURI           = authLdap_get_option('URI');
-    $authLDAPURISeparator  = authLdap_get_option('URISeparator');
-    $authLDAPStartTLS      = authLdap_get_option('StartTLS');
-    $authLDAPFilter        = authLdap_get_option('Filter');
-    $authLDAPNameAttr      = authLdap_get_option('NameAttr');
-    $authLDAPSecName       = authLdap_get_option('SecName');
-    $authLDAPMailAttr      = authLdap_get_option('MailAttr');
-    $authLDAPUidAttr       = authLdap_get_option('UidAttr');
-    $authLDAPWebAttr       = authLdap_get_option('WebAttr');
-    $authLDAPGroups        = authLdap_get_option('Groups');
-    $authLDAPGroupSeparator= authLdap_get_option('GroupSeparator');
-    $authLDAPDebug         = authLdap_get_option('Debug');
-    $authLDAPGroupAttr     = authLdap_get_option('GroupAttr');
-    $authLDAPGroupFilter   = authLdap_get_option('GroupFilter');
-    $authLDAPDefaultRole   = authLdap_get_option('DefaultRole');
-    $authLDAPGroupEnable   = authLdap_get_option('GroupEnable');
-    $authLDAPGroupOverUser = authLdap_get_option('GroupOverUser');
-
-    $tChecked              = ($authLDAP)               ? ' checked="checked"' : '';
-    $tDebugChecked         = ($authLDAPDebug)          ? ' checked="checked"' : '';
-    $tPWChecked            = ($authLDAPCachePW)        ? ' checked="checked"' : '';
-    $tGroupChecked         = ($authLDAPGroupEnable)    ? ' checked="checked"' : '';
-    $tGroupOverUserChecked = ($authLDAPGroupOverUser)  ? ' checked="checked"' : '';
-    $tStartTLSChecked      = ($authLDAPStartTLS)       ? ' checked="checked"' : '';
-
-    $roles = new WP_Roles();
-
-    $action = $_SERVER['REQUEST_URI'];
-    if (! extension_loaded('ldap')) {
-        echo '<div class="warning">The LDAP-Extension is not available on your '
-            . 'WebServer. Therefore Everything you can alter here does not '
-            . 'make any sense!</div>';
-    }
-
-    include dirname(__FILE__) . '/view/admin.phtml';
-}
 
 /**
  * get a LDAP server object
@@ -646,15 +566,9 @@ function authLdap_load_options($reload = false)
 {
     static $options = null;
 
-    // the current version for options
-    $option_version_plugin = 1;
-
-    if (is_null($options) || $reload) {
-        $options = get_option('authLDAPOptions', array());
-    }
-
-    // check if option version has changed (or if it's there at all)
-    if (!isset($options['Version']) || ($options['Version'] != $option_version_plugin)) {
+    if( empty($options) || $reload){
+        // the current version for options
+        $option_version_plugin = 1;
         // defaults for all options
         $options_default = array(
             'Enabled'       => false,
@@ -677,50 +591,15 @@ function authLdap_load_options($reload = false)
             'Version'       => $option_version_plugin,
         );
 
-        // check if we got a version
-        if (!isset($options['Version'])) {
-            // we just changed to the new option format
-            // read old options, then delete them
-            $old_option_new_option = array(
-                'authLDAP'              => 'Enabled',
-                'authLDAPCachePW'       => 'CachePW',
-                'authLDAPURI'           => 'URI',
-                'authLDAPFilter'        => 'Filter',
-                'authLDAPNameAttr'      => 'NameAttr',
-                'authLDAPSecName'       => 'SecName',
-                'authLDAPUidAttr'       => 'UidAttr',
-                'authLDAPMailAttr'      => 'MailAttr',
-                'authLDAPWebAttr'       => 'WebAttr',
-                'authLDAPGroups'        => 'Groups',
-                'authLDAPDebug'         => 'Debug',
-                'authLDAPGroupAttr'     => 'GroupAttr',
-                'authLDAPGroupFilter'   => 'GroupFilter',
-                'authLDAPDefaultRole'   => 'DefaultRole',
-                'authLDAPGroupEnable'   => 'GroupEnable',
-                'authLDAPGroupOverUser' => 'GroupOverUser',
-            );
-            foreach ($old_option_new_option as $old_option => $new_option) {
-                $value = get_option($old_option, null);
-                if (!is_null($value)) {
-                    $options[$new_option] = $value;
-                }
-                delete_option($old_option);
-            }
-            delete_option('authLDAPCookieMarker');
-            delete_option('authLDAPCookierMarker');
-        }
-
-        // set default for all options that are missing
-        foreach ($options_default as $key => $default) {
-            if (!isset($options[$key])) {
-                $options[$key] = $default;
+        // 2016-12-23 MLF (why we forked) Set any options we can find via defined constants
+        foreach ($options as $option_name => $option_value) {
+            $constant_name = 'AUTHLDAP_'.strtoupper($option_name);
+            if( defined($constant_name) ){
+                $options[$option_name] = constant($constant_name);
             }
         }
-
-        // set new version and save
-        $options['Version'] = $option_version_plugin;
-        update_option('authLDAPOptions', $options);
     }
+
     return $options;
 }
 
@@ -742,30 +621,6 @@ function authLdap_get_option($optionname, $default = null)
     return null;
 }
 
-/**
- * Set new options
- */
-function authLdap_set_options($new_options = array())
-{
-    // initialize the options with what we currently have
-    $options = authLdap_load_options();
-
-    // set the new options supplied
-    foreach ($new_options as $key => $value) {
-        $options[$key] = $value;
-    }
-
-    // store options
-    if (update_option('authLDAPOptions', $options)) {
-        // reload the option cache
-        authLdap_load_options(true);
-
-        return true;
-    } else {
-        // could not set options
-        return false;
-    }
-}
 
 /**
  * Do not send an email after changing the password or the email of the user!
@@ -785,7 +640,6 @@ function authLdap_send_change_email($result, $user, $newUserData)
     return $result;
 }
 
-add_action('admin_menu', 'authLdap_addmenu');
 add_filter('show_password_fields', 'authLdap_show_password_fields', 10, 2);
 add_filter('allow_password_reset', 'authLdap_allow_password_reset', 10, 2);
 add_filter('authenticate', 'authLdap_login', 10, 3);
